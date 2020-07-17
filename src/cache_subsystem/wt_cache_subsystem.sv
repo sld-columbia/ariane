@@ -189,12 +189,12 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
     {dcache_req_ports_i[2].address_tag, dcache_req_ports_i[2].address_index}, dcache_req_ports_i[2].data_be, dcache_req_ports_i[2].data_wdata);
 
 
-  for (genvar j=0; j<2; j++) begin : gen_assertion
-    a_invalid_read_data: assert property (
-      @(posedge clk_i) disable iff (!rst_ni) dcache_req_ports_o[j].data_rvalid && ~dcache_req_ports_i[j].kill_req |-> (|dcache_req_ports_o[j].data_rdata) !== 1'hX)
-    else $warning(1,"[l1 dcache] reading invalid data on port %01d: data=%016X",
-      j, dcache_req_ports_o[j].data_rdata);
-  end
+  // for (genvar j=0; j<2; j++) begin : gen_assertion
+  //   a_invalid_read_data: assert property (
+  //     @(posedge clk_i) disable iff (!rst_ni) dcache_req_ports_o[j].data_rvalid && ~dcache_req_ports_i[j].kill_req |-> (|dcache_req_ports_o[j].data_rdata) !== 1'hX)
+  //   else $warning(1,"[l1 dcache] reading invalid data on port %01d: data=%016X",
+  //     j, dcache_req_ports_o[j].data_rdata);
+  // end
 `endif
 //pragma translate_on
 
