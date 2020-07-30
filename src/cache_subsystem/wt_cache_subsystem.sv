@@ -178,10 +178,10 @@ module wt_cache_subsystem import ariane_pkg::*; import wt_cache_pkg::*; #(
 
 //pragma translate_off
 `ifndef VERILATOR
-  a_invalid_instruction_fetch: assert property (
-    @(posedge clk_i) disable iff (!rst_ni) icache_dreq_o.valid |-> (|icache_dreq_o.data) !== 1'hX)
-  else $warning(1,"[l1 dcache] reading invalid instructions: vaddr=%08X, data=%08X",
-    icache_dreq_o.vaddr, icache_dreq_o.data);
+  // a_invalid_instruction_fetch: assert property (
+  //   @(posedge clk_i) disable iff (!rst_ni) icache_dreq_o.valid |-> (|icache_dreq_o.data) !== 1'hX)
+  // else $warning(1,"[l1 dcache] reading invalid instructions: vaddr=%08X, data=%08X",
+  //   icache_dreq_o.vaddr, icache_dreq_o.data);
 
   a_invalid_write_data: assert property (
     @(posedge clk_i) disable iff (!rst_ni) dcache_req_ports_i[2].data_req |-> |dcache_req_ports_i[2].data_be |-> (|dcache_req_ports_i[2].data_wdata) !== 1'hX)
