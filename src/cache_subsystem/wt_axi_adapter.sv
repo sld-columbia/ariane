@@ -67,7 +67,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic axi_rd_req, axi_rd_gnt;
   logic axi_wr_req, axi_wr_gnt;
   logic axi_wr_valid, axi_rd_valid, axi_rd_rdy, axi_wr_rdy;
-  logic axi_rd_lock, axi_wr_lock, axi_rd_exokay, axi_wr_exokay, wr_exokay;
+  logic axi_rd_lock, axi_wr_lock, axi_rd_exokay, axi_wr_exokay, wr_exokay, axi_rd_instr;
   logic [63:0]                    axi_rd_addr, axi_wr_addr;
   logic [$clog2(AxiNumWords)-1:0] axi_rd_blen, axi_wr_blen;
   logic [1:0] axi_rd_size, axi_wr_size;
@@ -140,6 +140,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     axi_rd_req   = 1'b0;
     axi_rd_lock  = '0;
     axi_rd_blen  = '0;
+    axi_rd_instr = 1'b0;
 
     // arbiter mux
     if (arb_idx) begin
@@ -154,6 +155,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
       if (!icache_data.nc) begin
         axi_rd_blen = ariane_pkg::ICACHE_LINE_WIDTH/64-1;
       end
+      axi_rd_instr = 1'b1;
     end
 
     // signal that an invalidation message
@@ -563,6 +565,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     .rd_blen_i       ( axi_rd_blen       ),
     .rd_size_i       ( axi_rd_size       ),
     .rd_id_i         ( axi_rd_id_in      ),
+    .rd_instr_i      ( axi_rd_instr      ),
     .rd_rdy_i        ( axi_rd_rdy        ),
     .rd_lock_i       ( axi_rd_lock       ),
     .rd_last_o       ( axi_rd_last       ),

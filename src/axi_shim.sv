@@ -35,6 +35,7 @@ module axi_shim #(
   input  logic [AxiIdWidth-1:0]           rd_id_i,   // use same ID for reads, or make sure you only have one outstanding read tx
   input  logic                            rd_lock_i,
   // read response (we have to unconditionally sink the response)
+  input  logic                            rd_instr_i,
   input  logic                            rd_rdy_i,
   output logic                            rd_last_o,
   output logic                            rd_valid_o,
@@ -239,7 +240,7 @@ module axi_shim #(
   assign axi_req_o.ar.size   = rd_size_i;
   assign axi_req_o.ar.len    = rd_blen_i;
   assign axi_req_o.ar.id     = rd_id_i;
-  assign axi_req_o.ar.prot   = 3'b0;
+  assign axi_req_o.ar.prot   = {rd_instr_i, 2'b0};
   assign axi_req_o.ar.region = 4'b0;
   assign axi_req_o.ar.lock   = rd_lock_i;
   assign axi_req_o.ar.cache  = 4'b0010;
