@@ -25,6 +25,8 @@ module amo_buffer (
     input  logic [riscv::PLEN-1:0]      paddr_i,            // physical address of store which needs to be placed in the queue
     input  riscv::xlen_t     data_i,             // data which is placed in the queue
     input  logic [1:0]       data_size_i,        // type of request we are making (e.g.: bytes to write)
+    input  logic             aq_i,
+    input  logic             rl_i,
     // D$
     output ariane_pkg::amo_req_t  amo_req_o,          // request to cache subsytem
     input  ariane_pkg::amo_resp_t amo_resp_i,         // response from cache subsystem
@@ -40,6 +42,8 @@ module amo_buffer (
         logic [riscv::PLEN-1:0] paddr;
         riscv::xlen_t data;
         logic [1:0]  size;
+        logic        aq;
+        logic        rl;
     } amo_op_t ;
 
     amo_op_t amo_data_in, amo_data_out;
@@ -50,11 +54,15 @@ module amo_buffer (
     assign amo_req_o.size = amo_data_out.size;
     assign amo_req_o.operand_a = {{64-riscv::PLEN{1'b0}}, amo_data_out.paddr};
     assign amo_req_o.operand_b = {{64-riscv::XLEN{1'b0}}, amo_data_out.data};
+    assign amo_req_o.aq = amo_data_out.aq;
+    assign amo_req_o.rl = amo_data_out.rl;
 
     assign amo_data_in.op = amo_op_i;
     assign amo_data_in.data = data_i;
     assign amo_data_in.paddr = paddr_i;
     assign amo_data_in.size = data_size_i;
+    assign amo_data_in.aq = aq_i;
+    assign amo_data_in.rl = rl_i;
 
     // only flush if we are currently not committing the AMO
     // e.g.: it is not speculative anymore

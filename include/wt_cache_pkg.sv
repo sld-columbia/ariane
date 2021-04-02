@@ -82,6 +82,7 @@ package wt_cache_pkg;
     logic [7:0]                                                             txblock; // byte is part of transaction in-flight
     logic                                                                   checked; // if cache state of this word has been checked
     logic [ariane_pkg::DCACHE_SET_ASSOC-1:0]                                hit_oh;  // valid way in the cache
+    ariane_pkg::dcs_data_t                                                  dcs_data;
   } wbuffer_t;
 
   // TX status registers are indexed with the transaction ID
@@ -153,6 +154,9 @@ package wt_cache_pkg;
     logic                                            nc;          // noncacheable
     logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Ariane)
     ariane_pkg::amo_t                                amo_op;      // amo opcode
+    ariane_pkg::dcs_data_t                           dcs_data;
+    logic                                            aq;
+    logic                                            rl;
   } dcache_req_t;
 
   typedef struct packed {

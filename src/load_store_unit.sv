@@ -88,6 +88,9 @@ module load_store_unit import ariane_pkg::*; #(
     logic      pop_st;
     logic      pop_ld;
 
+    // dynamic coherence specialization data
+    dcs_data_t                dcs_data;
+
     // ------------------------------
     // Address Generation Unit (AGU)
     // ------------------------------
@@ -97,11 +100,31 @@ module load_store_unit import ariane_pkg::*; #(
     logic                     overflow;
     logic [7:0]               be_i;
 
-    assign vaddr_xlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
+    // assign vaddr_xlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
+    always_comb begin
+        if(fu_data_i.use_dcs == 1'b1) begin
+            dcs_data.dcs_en = 1'b1;
+            dcs_data.dcs    = fu_data_i.imm[10:9];
+            dcs_data.cid    = fu_data_i.imm[ 8:5];
+            if(fu_data_i.imm[4] == 1'b1) begin
+                // use owner prediction
+                dcs_data.use_owner_pred = 1'b1;
+                vaddr_xlen = $unsigned($signed({ {60 {fu_data_i.imm[3]}}, fu_data_i.imm[3:0] }) + $signed(fu_data_i.operand_a));
+            end else begin
+                // no owner prediction
+                dcs_data.use_owner_pred = 1'b0;
+                vaddr_xlen = $unsigned($signed({ {56 {fu_data_i.imm[7]}}, fu_data_i.imm[8:5], fu_data_i.imm[3:0] }) + $signed(fu_data_i.operand_a));
+            end
+        end else begin
+            dcs_data = '0;
+            vaddr_xlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
+        end
+        //vaddr_xlen = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));///////////////////////////////////////// for testing
+    end
+
     assign vaddr_i = vaddr_xlen[riscv::VLEN-1:0];
     // we work with SV39 or SV32, so if VM is enabled, check that all bits [XLEN-1:38] or [XLEN-1:31] are equal
     assign overflow = !((&vaddr_xlen[riscv::XLEN-1:riscv::SV-1]) == 1'b1 || (|vaddr_xlen[riscv::XLEN-1:riscv::SV-1]) == 1'b0);
-
     logic                     st_valid_i;
     logic                     ld_valid_i;
     logic                     ld_translation_req;
@@ -386,7 +409,7 @@ module load_store_unit import ariane_pkg::*; #(
     // new data arrives here
     lsu_ctrl_t lsu_req_i;
 
-    assign lsu_req_i = {lsu_valid_i, vaddr_i, overflow, {{64-riscv::XLEN{1'b0}}, fu_data_i.operand_b}, be_i, fu_data_i.fu, fu_data_i.operator, fu_data_i.trans_id};
+    assign lsu_req_i = {lsu_valid_i, vaddr_i, overflow, {{64-riscv::XLEN{1'b0}}, fu_data_i.operand_b}, be_i, fu_data_i.fu, fu_data_i.operator, fu_data_i.trans_id, dcs_data, fu_data_i.aq, fu_data_i.rl};
 
     lsu_bypass lsu_bypass_i (
         .lsu_req_i          ( lsu_req_i   ),
@@ -504,4 +527,3 @@ module lsu_bypass import ariane_pkg::*; (
         end
     end
 endmodule
-

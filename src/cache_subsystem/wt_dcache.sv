@@ -79,6 +79,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
   logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]    miss_vld_bits;
   logic [NumPorts-1:0][2:0]                     miss_size;
   logic [NumPorts-1:0][CACHE_ID_WIDTH-1:0]      miss_id;
+  dcs_data_t [NumPorts-1:0]                     miss_dcs_data;
   logic [NumPorts-1:0]                          miss_replay;
   logic [NumPorts-1:0]                          miss_rtrn_vld;
   logic [CACHE_ID_WIDTH-1:0]                    miss_rtrn_id;
@@ -133,6 +134,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
     .miss_vld_bits_i    ( miss_vld_bits      ),
     .miss_size_i        ( miss_size          ),
     .miss_id_i          ( miss_id            ),
+    .miss_dcs_data_i    ( miss_dcs_data      ),
     .miss_replay_o      ( miss_replay        ),
     .miss_rtrn_vld_o    ( miss_rtrn_vld      ),
     .miss_rtrn_id_o     ( miss_rtrn_id       ),
@@ -186,6 +188,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
       .miss_nc_o       ( miss_nc       [k] ),
       .miss_size_o     ( miss_size     [k] ),
       .miss_id_o       ( miss_id       [k] ),
+      .miss_dcs_data_o ( miss_dcs_data [k] ),
       .miss_replay_i   ( miss_replay   [k] ),
       .miss_rtrn_vld_i ( miss_rtrn_vld [k] ),
       // used to detect readout mux collisions
@@ -232,6 +235,7 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
     .miss_nc_o       ( miss_nc       [2]   ),
     .miss_size_o     ( miss_size     [2]   ),
     .miss_id_o       ( miss_id       [2]   ),
+    .miss_dcs_data_o ( miss_dcs_data [2]   ),
     .miss_rtrn_vld_i ( miss_rtrn_vld [2]   ),
     .miss_rtrn_id_i  ( miss_rtrn_id        ),
     // cache read interface

@@ -127,6 +127,9 @@ module decoder import ariane_pkg::*; (
         instruction_o.use_zimm      = 1'b0;
         instruction_o.bp            = branch_predict_i;
         instruction_o.vfp           = 1'b0;
+        instruction_o.use_dcs       = 1'b0;
+        instruction_o.aq            = 1'b0;
+        instruction_o.rl            = 1'b0;
         ecall                       = 1'b0;
         ebreak                      = 1'b0;
         check_fprm                  = 1'b0;
@@ -686,6 +689,94 @@ module decoder import ariane_pkg::*; (
                 end
 
                 // --------------------------------
+                // DCS Load/Store
+                // Custom1 used for Store, bit 31: 0 for integer, 1 for float
+                // Custom0 used for Load,  bit 31: 0 for integer, 1 for float
+                // --------------------------------
+                riscv::OpcodeCustom1: begin
+                    if (instr.instr[31] == 1'b0) begin
+                        instruction_o.fu  = STORE;
+                        imm_select = SIMM;
+                        instruction_o.rs1[4:0]  = instr.stype.rs1;
+                        instruction_o.rs2[4:0]  = instr.stype.rs2;
+                        instruction_o.use_dcs   = 1'b1;
+                        // determine store size
+                        unique case (instr.stype.funct3)
+                            3'b000: instruction_o.op  = ariane_pkg::SB;
+                            3'b001: instruction_o.op  = ariane_pkg::SH;
+                            3'b010: instruction_o.op  = ariane_pkg::SW;
+                            3'b011: instruction_o.op  = ariane_pkg::SD;
+                            default: illegal_instr = 1'b1;
+                        endcase
+                    end else begin
+                        if (FP_PRESENT && fs_i != riscv::Off) begin // only generate decoder if FP extensions are enabled (static)
+                            instruction_o.fu  = STORE;
+                            imm_select = SIMM;
+                            instruction_o.rs1        = instr.stype.rs1;
+                            instruction_o.rs2        = instr.stype.rs2;
+                            instruction_o.use_dcs    = 1'b1;
+                            // determine store size
+                            unique case (instr.stype.funct3)
+                                // Only process instruction if corresponding extension is active (static)
+                                3'b000: if (XF8) instruction_o.op = ariane_pkg::FSB;
+                                        else illegal_instr = 1'b1;
+                                3'b001: if (XF16 | XF16ALT) instruction_o.op = ariane_pkg::FSH;
+                                        else illegal_instr = 1'b1;
+                                3'b010: if (RVF) instruction_o.op = ariane_pkg::FSW;
+                                        else illegal_instr = 1'b1;
+                                3'b011: if (RVD) instruction_o.op = ariane_pkg::FSD;
+                                        else illegal_instr = 1'b1;
+                                default: illegal_instr = 1'b1;
+                            endcase
+                        end else
+                            illegal_instr = 1'b1;
+                    end
+                end
+
+                riscv::OpcodeCustom0: begin
+                    if (instr.instr[31] == 1'b0) begin
+                    instruction_o.fu  = LOAD;
+                    imm_select = IIMM;
+                    instruction_o.rs1[4:0] = instr.itype.rs1;
+                    instruction_o.rd[4:0]  = instr.itype.rd;
+                        instruction_o.use_dcs   = 1'b1;
+                    // determine load size and signed type
+                    unique case (instr.itype.funct3)
+                        3'b000: instruction_o.op  = ariane_pkg::LB;
+                        3'b001: instruction_o.op  = ariane_pkg::LH;
+                        3'b010: instruction_o.op  = ariane_pkg::LW;
+                        3'b100: instruction_o.op  = ariane_pkg::LBU;
+                        3'b101: instruction_o.op  = ariane_pkg::LHU;
+                        3'b110: instruction_o.op  = ariane_pkg::LWU;
+                        3'b011: instruction_o.op  = ariane_pkg::LD;
+                        default: illegal_instr = 1'b1;
+                    endcase
+                    end else begin
+                        if (FP_PRESENT && fs_i != riscv::Off) begin // only generate decoder if FP extensions are enabled (static)
+                            instruction_o.fu  = LOAD;
+                            imm_select = IIMM;
+                            instruction_o.rs1       = instr.itype.rs1;
+                            instruction_o.rd        = instr.itype.rd;
+                            instruction_o.use_dcs   = 1'b1;
+                            // determine load size
+                            unique case (instr.itype.funct3)
+                                // Only process instruction if corresponding extension is active (static)
+                                3'b000: if (XF8) instruction_o.op = ariane_pkg::FLB;
+                                        else illegal_instr = 1'b1;
+                                3'b001: if (XF16 | XF16ALT) instruction_o.op = ariane_pkg::FLH;
+                                        else illegal_instr = 1'b1;
+                                3'b010: if (RVF) instruction_o.op  = ariane_pkg::FLW;
+                                        else illegal_instr = 1'b1;
+                                3'b011: if (RVD) instruction_o.op  = ariane_pkg::FLD;
+                                        else illegal_instr = 1'b1;
+                                default: illegal_instr = 1'b1;
+                            endcase
+                        end else
+                            illegal_instr = 1'b1;
+                    end
+                end
+
+                // --------------------------------
                 // Floating-Point Load/store
                 // --------------------------------
                 riscv::OpcodeStoreFp: begin
@@ -950,6 +1041,8 @@ module decoder import ariane_pkg::*; (
                     instruction_o.rs2[4:0] = instr.atype.rs2;
                     instruction_o.rd[4:0]  = instr.atype.rd;
                     // TODO(zarubaf): Ordering
+                    instruction_o.aq   = instr.instr[26];
+                    instruction_o.rl   = instr.instr[25];
                     // words
                     if (RVA && instr.stype.funct3 == 3'h2) begin
                         unique case (instr.instr[31:27])

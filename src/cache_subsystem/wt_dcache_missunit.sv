@@ -42,6 +42,7 @@ module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
   input  logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]  miss_vld_bits_i,
   input  logic [NumPorts-1:0][2:0]                   miss_size_i,
   input  logic [NumPorts-1:0][CACHE_ID_WIDTH-1:0]    miss_id_i,          // used as transaction ID
+  input  dcs_data_t [NumPorts-1:0]                   miss_dcs_data_i,
   // signals that the request collided with a pending read
   output logic [NumPorts-1:0]                        miss_replay_o,
   // signals response from memory
@@ -225,6 +226,9 @@ module wt_dcache_missunit import ariane_pkg::*; import wt_cache_pkg::*; #(
   assign mem_data_o.data   = (amo_sel) ? amo_data            : miss_wdata_i[miss_port_idx];
   assign mem_data_o.size   = (amo_sel) ? amo_req_i.size      : miss_size_i [miss_port_idx];
   assign mem_data_o.amo_op = (amo_sel) ? amo_req_i.amo_op    : AMO_NONE;
+  assign mem_data_o.dcs_data = (amo_sel) ? '0                : miss_dcs_data_i[miss_port_idx];
+  assign mem_data_o.aq     = (amo_sel) ? amo_req_i.aq        : '0;
+  assign mem_data_o.rl     = (amo_sel) ? amo_req_i.rl        : '0;
 
   assign tmp_paddr         = (amo_sel) ? amo_req_i.operand_a[riscv::PLEN-1:0] : miss_paddr_i[miss_port_idx];
   assign mem_data_o.paddr  = wt_cache_pkg::paddrSizeAlign(tmp_paddr, mem_data_o.size);

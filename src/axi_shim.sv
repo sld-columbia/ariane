@@ -32,6 +32,7 @@ module axi_shim #(
   input  logic [63:0]                     rd_addr_i,
   input  logic [$clog2(AxiNumWords)-1:0]  rd_blen_i, // axi convention: LEN-1
   input  logic [1:0]                      rd_size_i,
+  input  ariane_pkg::dcs_data_t           rd_dcs_data_i,
   input  logic [AxiIdWidth-1:0]           rd_id_i,   // use same ID for reads, or make sure you only have one outstanding read tx
   input  logic                            rd_lock_i,
   // read response (we have to unconditionally sink the response)
@@ -50,9 +51,12 @@ module axi_shim #(
   input  logic [AxiNumWords-1:0][7:0]     wr_be_i,
   input  logic [$clog2(AxiNumWords)-1:0]  wr_blen_i, // axi convention: LEN-1
   input  logic [1:0]                      wr_size_i,
+  input  ariane_pkg::dcs_data_t           wr_dcs_data_i,
   input  logic [AxiIdWidth-1:0]           wr_id_i,
   input  logic                            wr_lock_i,
   input  logic [5:0]                      wr_atop_i,
+  input  logic                            wr_aq_i,
+  input  logic                            wr_rl_i,
   // write response
   input  logic                            wr_rdy_i,
   output logic                            wr_valid_o,
@@ -82,6 +86,7 @@ module axi_shim #(
   assign axi_req_o.aw.burst  = axi_pkg::BURST_INCR; // Use BURST_INCR for AXI regular transaction
   assign axi_req_o.aw.addr   = wr_addr_i;
   assign axi_req_o.aw.size   = wr_size_i;
+  assign axi_req_o.aw.user   = {wr_aq_i, wr_rl_i, wr_dcs_data_i};
   assign axi_req_o.aw.len    = wr_blen_i;
   assign axi_req_o.aw.id     = wr_id_i;
   assign axi_req_o.aw.prot   = 3'b0;
@@ -238,6 +243,7 @@ module axi_shim #(
   assign axi_req_o.ar.burst  = axi_pkg::BURST_INCR; // Use BURST_INCR for AXI regular transaction
   assign axi_req_o.ar.addr   = rd_addr_i;
   assign axi_req_o.ar.size   = rd_size_i;
+  assign axi_req_o.ar.user   = {2'b0, rd_dcs_data_i};
   assign axi_req_o.ar.len    = rd_blen_i;
   assign axi_req_o.ar.id     = rd_id_i;
   assign axi_req_o.ar.prot   = {rd_instr_i, 2'b0};

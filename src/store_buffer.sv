@@ -37,6 +37,7 @@ module store_buffer import ariane_pkg::*; (
     input  riscv::xlen_t            data_i,          // data which is placed in the queue
     input  logic [7:0]   be_i,            // byte enable in
     input  logic [1:0]   data_size_i,     // type of request we are making (e.g.: bytes to write)
+    input  dcs_data_t    dcs_data_i,
 
     // D$ interface
     input  dcache_req_o_t req_port_i,
@@ -51,6 +52,7 @@ module store_buffer import ariane_pkg::*; (
         riscv::xlen_t           data;
         logic [7:0]             be;
         logic [1:0]             data_size;
+        dcs_data_t              dcs_data;
         logic                   valid;     // this entry is valid, we need this for checking if the address offset matches
     } speculative_queue_n [DEPTH_SPEC-1:0], speculative_queue_q [DEPTH_SPEC-1:0],
       commit_queue_n [DEPTH_COMMIT-1:0],    commit_queue_q [DEPTH_COMMIT-1:0];
@@ -87,6 +89,7 @@ module store_buffer import ariane_pkg::*; (
             speculative_queue_n[speculative_write_pointer_q].data      = data_i;
             speculative_queue_n[speculative_write_pointer_q].be        = be_i;
             speculative_queue_n[speculative_write_pointer_q].data_size = data_size_i;
+            speculative_queue_n[speculative_write_pointer_q].dcs_data  = dcs_data_i;
             speculative_queue_n[speculative_write_pointer_q].valid   = 1'b1;
             // advance the write pointer
             speculative_write_pointer_n = speculative_write_pointer_q + 1'b1;
@@ -137,6 +140,7 @@ module store_buffer import ariane_pkg::*; (
                                                                               {commit_queue_q[commit_read_pointer_q].data, {64-riscv::XLEN{1'b0}}};
     assign req_port_o.data_be       = commit_queue_q[commit_read_pointer_q].be;
     assign req_port_o.data_size     = commit_queue_q[commit_read_pointer_q].data_size;
+    assign req_port_o.dcs_data      = commit_queue_q[commit_read_pointer_q].dcs_data;
 
     always_comb begin : store_if
         automatic logic [DEPTH_COMMIT:0] commit_status_cnt;

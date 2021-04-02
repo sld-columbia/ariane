@@ -66,11 +66,13 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
 
   logic axi_rd_req, axi_rd_gnt;
   logic axi_wr_req, axi_wr_gnt;
+  logic axi_wr_aq , axi_wr_rl;
   logic axi_wr_valid, axi_rd_valid, axi_rd_rdy, axi_wr_rdy;
   logic axi_rd_lock, axi_wr_lock, axi_rd_exokay, axi_wr_exokay, wr_exokay, axi_rd_instr;
   logic [63:0]                    axi_rd_addr, axi_wr_addr;
   logic [$clog2(AxiNumWords)-1:0] axi_rd_blen, axi_wr_blen;
   logic [1:0] axi_rd_size, axi_wr_size;
+  dcs_data_t axi_rd_dcs_data, axi_wr_dcs_data;
   logic [$size(axi_resp_i.r.id)-1:0] axi_rd_id_in, axi_wr_id_in, axi_rd_id_out, axi_wr_id_out, wr_id_out;
   logic [AxiNumWords-1:0][63:0] axi_wr_data;
   logic [63:0] axi_rd_data;
@@ -127,11 +129,14 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     axi_wr_data  = dcache_data.data;
     axi_wr_addr  = {{64-riscv::PLEN{1'b0}}, dcache_data.paddr};
     axi_wr_size  = dcache_data.size[1:0];
+    axi_wr_dcs_data = dcache_data.dcs_data;
     axi_wr_req   = 1'b0;
     axi_wr_blen  = '0;// single word writes
     axi_wr_be    = '0;
     axi_wr_lock  = '0;
     axi_wr_atop  = '0;
+    axi_wr_aq    = dcache_data.aq;
+    axi_wr_rl    = dcache_data.rl;
     amo_off_d    = '0;
     amo_gen_r_d  = amo_gen_r_q;
 
@@ -146,12 +151,14 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     if (arb_idx) begin
       axi_rd_addr  = {{64-riscv::PLEN{1'b0}}, dcache_data.paddr};
       axi_rd_size  = dcache_data.size[1:0];
+      axi_rd_dcs_data = dcache_data.dcs_data;
       if (dcache_data.size[2]) begin
         axi_rd_blen = ariane_pkg::DCACHE_LINE_WIDTH/64-1;
       end
     end else begin
       axi_rd_addr  = {{64-riscv::PLEN{1'b0}}, icache_data.paddr};
       axi_rd_size  = 2'b11;// always request 64bit words in case of ifill
+      axi_rd_dcs_data   = 4'b0;
       if (!icache_data.nc) begin
         axi_rd_blen = ariane_pkg::ICACHE_LINE_WIDTH/64-1;
       end
@@ -564,6 +571,7 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     .rd_addr_i       ( axi_rd_addr       ),
     .rd_blen_i       ( axi_rd_blen       ),
     .rd_size_i       ( axi_rd_size       ),
+    .rd_dcs_data_i   ( axi_rd_dcs_data   ),
     .rd_id_i         ( axi_rd_id_in      ),
     .rd_instr_i      ( axi_rd_instr      ),
     .rd_rdy_i        ( axi_rd_rdy        ),
@@ -580,9 +588,12 @@ module wt_axi_adapter import ariane_pkg::*; import wt_cache_pkg::*; #(
     .wr_be_i         ( axi_wr_be         ),
     .wr_blen_i       ( axi_wr_blen       ),
     .wr_size_i       ( axi_wr_size       ),
+    .wr_dcs_data_i   ( axi_wr_dcs_data   ),
     .wr_id_i         ( axi_wr_id_in      ),
     .wr_lock_i       ( axi_wr_lock       ),
     .wr_atop_i       ( axi_wr_atop       ),
+    .wr_aq_i         ( axi_wr_aq         ),
+    .wr_rl_i         ( axi_wr_rl         ),
     .wr_rdy_i        ( axi_wr_rdy        ),
     .wr_valid_o      ( axi_wr_valid      ),
     .wr_id_o         ( axi_wr_id_out     ),

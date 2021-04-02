@@ -71,6 +71,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   output logic                               miss_nc_o,       // request to I/O space
   output logic [2:0]                         miss_size_o,     //
   output logic [CACHE_ID_WIDTH-1:0]          miss_id_o,       // ID of this transaction (wbuffer uses all IDs from 0 to DCACHE_MAX_TX-1)
+  output dcs_data_t                          miss_dcs_data_o,
   // write responses from memory
   input  logic                               miss_rtrn_vld_i,
   input  logic [CACHE_ID_WIDTH-1:0]          miss_rtrn_id_i,  // transaction ID to clear
@@ -174,6 +175,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   // add the offset to the physical base address of this buffer entry
   assign miss_paddr_o = {wbuffer_dirty_mux.wtag, bdirty_off};
   assign miss_id_o    = tx_id;
+  assign miss_dcs_data_o = wbuffer_dirty_mux.dcs_data;
 
   // is there any dirty word to be transmitted, and is there a free TX slot?
   assign miss_req_o = (|dirty) && free_tx_slots;
@@ -476,6 +478,9 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
             wbuffer_d[wr_ptr].data[k*8 +: 8] = req_port_i.data_wdata[k*8 +: 8];
           end
         end
+
+        wbuffer_d[wr_ptr].dcs_data = req_port_i.dcs_data;
+
       end
     end
   end

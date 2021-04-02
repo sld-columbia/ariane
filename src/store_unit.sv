@@ -67,6 +67,9 @@ module store_unit import ariane_pkg::*; (
     riscv::xlen_t st_data_n, st_data_q;
     logic [7:0]   st_be_n,        st_be_q;
     logic [1:0]   st_data_size_n, st_data_size_q;
+    dcs_data_t    st_dcs_data_n,  st_dcs_data_q;
+    logic         st_aq_n,        st_aq_q;
+    logic         st_rl_n,        st_rl_q;
     amo_t         amo_op_d,       amo_op_q;
 
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
@@ -184,6 +187,9 @@ module store_unit import ariane_pkg::*; (
         st_data_n = instr_is_amo ? lsu_ctrl_i.data[riscv::XLEN-1:0]
                                  : data_align(lsu_ctrl_i.vaddr[2:0], {{64-riscv::XLEN{1'b0}}, lsu_ctrl_i.data[riscv::XLEN-1:0]});
         st_data_size_n = extract_transfer_size(lsu_ctrl_i.operator);
+        st_dcs_data_n = lsu_ctrl_i.dcs_data;
+        st_aq_n = lsu_ctrl_i.aq;
+        st_rl_n = lsu_ctrl_i.rl;
         // save AMO op for next cycle
         case (lsu_ctrl_i.operator)
             AMO_LRW, AMO_LRD:     amo_op_d = AMO_LR;
@@ -235,6 +241,7 @@ module store_unit import ariane_pkg::*; (
         .data_i                ( st_data_q              ),
         .be_i                  ( st_be_q                ),
         .data_size_i           ( st_data_size_q         ),
+        .dcs_data_i            ( st_dcs_data_q          ),
         .req_port_i            ( req_port_i             ),
         .req_port_o            ( req_port_o             )
     );
@@ -249,6 +256,8 @@ module store_unit import ariane_pkg::*; (
         .amo_op_i           ( amo_op_q           ),
         .data_i             ( st_data_q          ),
         .data_size_i        ( st_data_size_q     ),
+        .aq_i               ( st_aq_q            ),
+        .rl_i               ( st_rl_q            ),
         .amo_req_o          ( amo_req_o          ),
         .amo_resp_i         ( amo_resp_i         ),
         .amo_valid_commit_i ( amo_valid_commit_i ),
@@ -264,6 +273,7 @@ module store_unit import ariane_pkg::*; (
             st_be_q        <= '0;
             st_data_q      <= '0;
             st_data_size_q <= '0;
+            st_dcs_data_q  <= '0;
             trans_id_q     <= '0;
             amo_op_q       <= AMO_NONE;
         end else begin
@@ -272,7 +282,10 @@ module store_unit import ariane_pkg::*; (
             st_data_q      <= st_data_n;
             trans_id_q     <= trans_id_n;
             st_data_size_q <= st_data_size_n;
+            st_dcs_data_q  <= st_dcs_data_n;
             amo_op_q       <= amo_op_d;
+            st_aq_q        <= st_aq_n;
+            st_rl_q        <= st_rl_n;
         end
     end
 
