@@ -669,6 +669,7 @@ package ariane_pkg;
         logic                     aq;
         logic                     rl;
         logic                     vfp;           // is this a vector floating-point instruction?
+        logic [1:0]               fence_op;
     } scoreboard_entry_t;
 
     // --------------------
