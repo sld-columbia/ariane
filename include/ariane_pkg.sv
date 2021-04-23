@@ -623,6 +623,7 @@ package ariane_pkg;
         logic                     use_dcs;       // 1 for load/store using dcs
         logic                     aq;
         logic                     rl;
+        logic [1:0]               fence_op;
     } scoreboard_entry_t;
 
     // --------------------

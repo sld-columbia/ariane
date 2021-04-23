@@ -50,8 +50,10 @@ module ariane #(
 `else
   // memory side, AXI Master
   output ariane_axi::req_t             axi_req_o,
-  input  ariane_axi::resp_t            axi_resp_i
+  input  ariane_axi::resp_t            axi_resp_i,
 `endif
+  // fence indication to l2
+  output logic [1:0]                   fence_l2
 );
 
   // ------------------------------------------
@@ -470,6 +472,7 @@ module ariane #(
     .fence_o                ( fence_commit_controller       ),
     .sfence_vma_o           ( sfence_vma_commit_controller  ),
     .flush_commit_o         ( flush_commit                  ),
+    .fence_l2               ( fence_l2                      ),
     .*
   );
 

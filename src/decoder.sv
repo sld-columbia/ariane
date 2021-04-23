@@ -85,6 +85,7 @@ module decoder (
         instruction_o.use_dcs       = 1'b0;
         instruction_o.aq            = 1'b0;
         instruction_o.rl            = 1'b0;
+        instruction_o.fence_op      = 2'b0;
         ecall                       = 1'b0;
         ebreak                      = 1'b0;
         check_fprm                  = 1'b0;
@@ -230,7 +231,15 @@ module decoder (
                     case (instr.stype.funct3)
                         // FENCE
                         // Currently implemented as a whole DCache flush boldly ignoring other things
-                        3'b000: instruction_o.op  = ariane_pkg::FENCE;
+                        3'b000: begin
+                            // instruction_o.sync = 1'b1;
+                            instruction_o.op  = ariane_pkg::FENCE;
+
+                            // we also sample the values of SR (required for self-invalidation)
+                            // and PW (required for WB flush)
+                            instruction_o.fence_op[0] = instr.stype.rs2[21]; // SR       
+                            instruction_o.fence_op[1] = instr.stype.rs2[24]; // PW
+                        end
                         // FENCE.I
                         3'b001: begin
                             if (instr.instr[31:20] != '0)

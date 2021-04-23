@@ -52,7 +52,8 @@ module commit_stage #(
     output logic                                    fence_i_o,          // flush I$ and pipeline
     output logic                                    fence_o,            // flush D$ and pipeline
     output logic                                    flush_commit_o,     // request a pipeline flush
-    output logic                                    sfence_vma_o        // flush TLBs and pipeline
+    output logic                                    sfence_vma_o,       // flush TLBs and pipeline 
+    output logic [1:0]                              fence_l2            // fence indication to l2
 );
 
 // ila_0 i_ila_commit (
@@ -112,6 +113,7 @@ module commit_stage #(
         sfence_vma_o       = 1'b0;
         csr_write_fflags_o = 1'b0;
         flush_commit_o  = 1'b0;
+        fence_l2           = 2'b0;
 
         // we will not commit the instruction if we took an exception
         // and we do not commit the instruction if we requested a halt
@@ -195,6 +197,11 @@ module commit_stage #(
                 commit_ack_o[0] = no_st_pending_i;
                 // tell the controller to flush the D$
                 fence_o = no_st_pending_i;
+
+                // we also sample the values of SR (required for self-invalidation)
+                // and PW (required for WB flush)
+                fence_l2[0] = commit_instr_i[0].fence_op[0] & fence_o; // SR       
+                fence_l2[1] = commit_instr_i[0].fence_op[1] & fence_o; // PW
             end
             // ------------------
             // AMO
