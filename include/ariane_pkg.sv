@@ -607,7 +607,6 @@ package ariane_pkg;
         logic [REG_ADDR_SIZE-1:0] rs1;           // register source address 1
         logic [REG_ADDR_SIZE-1:0] rs2;           // register source address 2
         logic [REG_ADDR_SIZE-1:0] rd;            // register destination address
-        logic                     sync;
         logic [63:0]              result;        // for unfinished instructions this field also holds the immediate,
                                                  // for unfinished floating-point that are partly encoded in rs2, this field also holds rs2
                                                  // for unfinished floating-point fused operations (FMADD, FMSUB, FNMADD, FNMSUB)
