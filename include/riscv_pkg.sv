@@ -136,6 +136,16 @@ package riscv;
         logic [11:7]  rd;
         logic [6:0]   opcode;
     } rftype_t; // floating-point
+    
+    typedef struct packed {
+        logic [31:30] reserved;
+        logic [29:25] mask2;
+        logic [24:20] mask1;
+        logic [19:15] rd;
+        logic [14:10] nfu;
+        logic [9:7]  funct3;
+        logic [6:0]   opcode;
+    } nfutype_t; // nfu 
 
     typedef struct packed {
         logic [31:30] funct2;
@@ -193,6 +203,7 @@ package riscv;
         stype_t        stype;
         utype_t        utype;
         atype_t        atype;
+        nfutype_t      nfutype;
     } instruction_t;
 
     // --------------------
@@ -202,7 +213,7 @@ package riscv;
     // Quadrant 0
     localparam OpcodeLoad      = 7'b00_000_11;
     localparam OpcodeLoadFp    = 7'b00_001_11;
-    localparam OpcodeCustom0   = 7'b00_010_11;
+    localparam OpcodeCustom0     = 7'b00_010_11;
     localparam OpcodeMiscMem   = 7'b00_011_11;
     localparam OpcodeOpImm     = 7'b00_100_11;
     localparam OpcodeAuipc     = 7'b00_101_11;
@@ -222,7 +233,8 @@ package riscv;
     localparam OpcodeNmadd     = 7'b10_011_11;
     localparam OpcodeOpFp      = 7'b10_100_11;
     localparam OpcodeRsrvd1    = 7'b10_101_11;
-    localparam OpcodeCustom2   = 7'b10_110_11;
+    //localparam OpcodeCustom2   = 7'b10_110_11;
+    localparam OpcodeOpNfu   = 7'b10_110_11;
     // Quadrant 3
     localparam OpcodeBranch    = 7'b11_000_11;
     localparam OpcodeJalr      = 7'b11_001_11;

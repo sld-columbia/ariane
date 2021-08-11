@@ -136,6 +136,8 @@ module ariane #(
   logic [63:0]              fpu_result_ex_id;
   logic                     fpu_valid_ex_id;
   exception_t               fpu_exception_ex_id;
+  // NFU
+  logic                     nfu_valid_id_ex;
   // CSR
   logic                     csr_valid_id_ex;
   // --------------
@@ -335,6 +337,8 @@ module ariane #(
     .fpu_valid_o                ( fpu_valid_id_ex              ),
     .fpu_fmt_o                  ( fpu_fmt_id_ex                ),
     .fpu_rm_o                   ( fpu_rm_id_ex                 ),
+    // NFU
+    .nfu_valid_o                ( nfu_valid_id_ex              ),
     // CSR
     .csr_valid_o                ( csr_valid_id_ex              ),
     // Commit
@@ -417,6 +421,11 @@ module ariane #(
     .amo_valid_commit_i     ( amo_valid_commit            ),
     .amo_req_o              ( amo_req                     ),
     .amo_resp_i             ( amo_resp                    ),
+    // NFU
+    .nfu_valid_i            ( nfu_valid_id_ex             ),
+    .nfu_commit_bypass_i    ( commit_instr_id_commit      ),
+    .commit_ack_i           ( commit_ack                  ),
+
     // Performance counters
     .itlb_miss_o            ( itlb_miss_ex_perf           ),
     .dtlb_miss_o            ( dtlb_miss_ex_perf           ),

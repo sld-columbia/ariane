@@ -1,0 +1,13 @@
+nfu:
+  incdirs: [
+  ]
+  files: [
+    src/nfu_top.sv,
+    src/nfu_irf.sv,
+    src/nfu_orf.sv,
+    src/nfu_decoder.sv,
+    src/nfu_config.sv,
+    src/nfu_acc.sv,
+    src/nfu_acc_wrap.sv,
+    src/accelerators/popcount_inline.sv
+  ]

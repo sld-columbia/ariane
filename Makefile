@@ -82,7 +82,8 @@ ariane_pkg := include/riscv_pkg.sv                          \
               tb/ariane_soc_pkg.sv                          \
               include/ariane_axi_pkg.sv                     \
               src/fpu/src/fpnew_pkg.sv                      \
-              src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
+              src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv \
+							src/nfu/src/nfu_pkg.sv
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 
 # utility modules
@@ -127,6 +128,8 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         $(filter-out src/fpu/src/fpnew_pkg.sv, $(wildcard src/fpu/src/*.sv))   \
         $(filter-out src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv,    \
         $(wildcard src/fpu/src/fpu_div_sqrt_mvp/hdl/*.sv))                     \
+        $(filter-out src/nfu/src/nfu_pkg.sv, $(wildcard src/nfu/src/*.sv))   	 \
+        $(filter-out blank.sv, $(wildcard src/nfu/src/accelerators/*.sv))   	 \
         $(wildcard src/frontend/*.sv)                                          \
         $(filter-out src/cache_subsystem/std_no_dcache.sv,                     \
         $(wildcard src/cache_subsystem/*.sv))                                  \
