@@ -146,6 +146,15 @@ module commit_stage #(
                 csr_write_fflags_o = 1'b1;
                 commit_ack_o[0] = 1'b1;
             end
+            // --------
+            // NFU Flags
+            // --------
+            if (NFU_PRESENT && commit_instr_i[0].fu == NFU) begin
+              case(commit_instr_i[0].op)
+                POP_NFU: we_gpr_o[0] = 1'b1;
+                default: we_gpr_o[0] = 1'b0;
+              endcase
+            end
             // ---------
             // CSR Logic
             // ---------
@@ -231,7 +240,7 @@ module commit_stage #(
                 // only if the first instruction didn't throw an exception and this instruction won't throw an exception
                 // and the functional unit is of type ALU, LOAD, CTRL_FLOW, MULT, FPU or FPU_VEC
                 if (!exception_o.valid && !commit_instr_i[1].ex.valid
-                                       && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU, FPU_VEC})) begin
+                                       && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU, FPU_VEC, NFU})) begin
 
                     if (is_rd_fpr(commit_instr_i[1].op))
                         we_fpr_o[1] = 1'b1;
@@ -239,6 +248,13 @@ module commit_stage #(
                         we_gpr_o[1] = 1'b1;
 
                     commit_ack_o[1] = 1'b1;
+
+                    if (NFU_PRESENT && commit_instr_i[1].fu == NFU) begin
+                      case(commit_instr_i[1].op)
+                        POP_NFU: we_gpr_o[1] = 1'b1;
+                        default: we_gpr_o[1] = 1'b0;
+                      endcase
+                    end
 
                     // additionally check if we are retiring an FPU instruction because we need to make sure that we write all
                     // exception flags

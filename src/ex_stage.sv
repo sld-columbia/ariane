@@ -76,6 +76,10 @@ module ex_stage #(
     output logic [63:0]                            fpu_result_o,
     output logic                                   fpu_valid_o,
     output exception_t                             fpu_exception_o,
+    // NFU
+    input logic                                    nfu_valid_i,
+    input scoreboard_entry_t [NR_COMMIT_PORTS-1:0] nfu_commit_bypass_i,
+    input logic [NR_COMMIT_PORTS-1:0]              commit_ack_i,
     // Memory Management
     input  logic                                   enable_translation_i,
     input  logic                                   en_ld_st_translation_i,
@@ -124,9 +128,9 @@ module ex_stage #(
 
     // from ALU to branch unit
     logic alu_branch_res; // branch comparison result
-    logic [63:0] alu_result, csr_result, mult_result;
+    logic [63:0] alu_result, csr_result, mult_result, nfu_result;
     logic [riscv::VLEN-1:0] branch_result;
-    logic csr_ready, mult_ready;
+    logic csr_ready, mult_ready, nfu_ready;
     logic [TRANS_ID_BITS-1:0] mult_trans_id;
     logic mult_valid;
 
@@ -154,7 +158,7 @@ module ex_stage #(
         .pc_i,
         .is_compressed_instr_i,
         // any functional unit is valid, check that there is no accidental mis-predict
-        .fu_valid_i ( alu_valid_i || lsu_valid_i || csr_valid_i || mult_valid_i || fpu_valid_i ) ,
+        .fu_valid_i ( alu_valid_i || lsu_valid_i || csr_valid_i || mult_valid_i || fpu_valid_i || nfu_valid_i ) ,
         .branch_valid_i,
         .branch_comp_res_i ( alu_branch_res ),
         .branch_result_o   ( branch_result ),
@@ -177,7 +181,7 @@ module ex_stage #(
         .csr_addr_o
     );
 
-    assign flu_valid_o = alu_valid_i | branch_valid_i | csr_valid_i | mult_valid;
+    assign flu_valid_o = alu_valid_i | branch_valid_i | csr_valid_i | mult_valid | nfu_valid_i;
 
     // result MUX
     always_comb begin
@@ -193,12 +197,15 @@ module ex_stage #(
         end else if (mult_valid) begin
             flu_result_o = mult_result;
             flu_trans_id_o = mult_trans_id;
-        end
+        // NFU result
+        end else if (nfu_valid_i) begin
+            flu_result_o = nfu_result;
+       end
     end
 
     // ready flags for FLU
     always_comb begin
-        flu_ready_o = csr_ready & mult_ready;
+        flu_ready_o = csr_ready & mult_ready & nfu_ready;
     end
 
     // 4. Multiplication (Sequential)
@@ -250,6 +257,31 @@ module ex_stage #(
             assign fpu_exception_o = '0;
         end
     endgenerate
+
+    // ----------------
+    // NFU
+    // ----------------
+    generate
+      if (NFU_PRESENT) begin : nfu_gen
+          fu_data_t nfu_data;
+          assign nfu_data = nfu_valid_i ? fu_data_i : '0;
+
+          nfu_wrap nfu_i (
+              .clk_i,
+              .rst_ni,
+              .fu_data_i ( nfu_data ),
+              .commit_instr_i ( nfu_commit_bypass_i ),
+              .commit_ack_i,
+              .nfu_valid_i,
+              .nfu_ready_o ( nfu_ready ),
+              .nfu_result_o ( nfu_result )
+            );
+      end else begin : no_nfu_gen
+        assign nfu_result     = '0;
+        assign nfu_ready      = '1;
+      end
+    endgenerate
+
 
     // ----------------
     // Load-Store Unit

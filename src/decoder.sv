@@ -55,7 +55,7 @@ module decoder (
     // Immediate select
     // --------------------
     enum logic[3:0] {
-        NOIMM, IIMM, SIMM, SBIMM, UIMM, JIMM, RS3
+        NOIMM, IIMM, SIMM, SBIMM, UIMM, JIMM, RS3, NFUIMM
     } imm_select;
 
     logic [63:0] imm_i_type;
@@ -64,6 +64,7 @@ module decoder (
     logic [63:0] imm_u_type;
     logic [63:0] imm_uj_type;
     logic [63:0] imm_bi_type;
+    logic [63:0] imm_nfu_type;
 
     always_comb begin : decoder
 
@@ -1099,6 +1100,28 @@ module decoder (
                     instruction_o.rd[4:0] = instr.utype.rd;
                 end
 
+                riscv::OpcodeOpNfu:  begin
+                    if (NFU_PRESENT) begin 
+                      instruction_o.fu      = NFU;
+                      imm_select           = NFUIMM;
+                      case (instr.nfutype.funct3)
+                        3'b000: begin 
+                          instruction_o.op     = ariane_pkg::SET_LOAD_NFU;
+                          end
+                        3'b001: begin 
+                          instruction_o.op     = ariane_pkg::EXEC_NFU;
+                          end
+                        3'b010: begin
+                          instruction_o.op = ariane_pkg::POP_NFU;
+                          instruction_o.rd = instr.nfutype.rd;
+                          end
+                        default: illegal_instr = 1'b1; 
+                      endcase
+                    end else begin
+                      illegal_instr = 1'b1;
+                    end
+                end
+
                 default: illegal_instr = 1'b1;
             endcase
         end
@@ -1114,8 +1137,9 @@ module decoder (
         imm_u_type  = { {32 {instruction_i[31]}}, instruction_i[31:12], 12'b0 }; // JAL, AUIPC, sign extended to 64 bit
         imm_uj_type = { {44 {instruction_i[31]}}, instruction_i[19:12], instruction_i[20], instruction_i[30:21], 1'b0 };
         imm_bi_type = { {59{instruction_i[24]}}, instruction_i[24:20] };
+        imm_nfu_type = { {44{1'b0}}, {instr.nfutype.mask2, instr.nfutype.mask1, instr.nfutype.rd, instr.nfutype.nfu} };
 
-        // NOIMM, IIMM, SIMM, BIMM, UIMM, JIMM, RS3
+        // NOIMM, IIMM, SIMM, BIMM, UIMM, JIMM, RS3, NFUIMM
         // select immediate
         case (imm_select)
             IIMM: begin
@@ -1142,6 +1166,11 @@ module decoder (
                 // result holds address of fp operand rs3
                 instruction_o.result = {59'b0, instr.r4type.rs3};
                 instruction_o.use_imm = 1'b0;
+            end
+            NFUIMM: begin
+                // We use result to store the masked instructions
+                instruction_o.result = imm_nfu_type;
+                instruction_o.use_imm = 1'b1;
             end
             default: begin
                 instruction_o.result = 64'b0;

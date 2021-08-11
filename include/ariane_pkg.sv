@@ -185,6 +185,8 @@ package ariane_pkg;
     // vvvv Don't change these by hand! vvvv
     localparam bit FP_PRESENT = RVF | RVD | XF16 | XF16ALT | XF8;
 
+    localparam bit NFU_PRESENT = 0;
+
     // Length of widest floating-point format
     localparam FLEN    = RVD     ? 64 : // D ext.
                          RVF     ? 32 : // F ext.
@@ -355,7 +357,8 @@ package ariane_pkg;
         MULT,      // 5
         CSR,       // 6
         FPU,       // 7
-        FPU_VEC    // 8
+        FPU_VEC,   // 8
+        NFU        // 9
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;
@@ -466,7 +469,9 @@ package ariane_pkg;
                                // Floating-Point Classify Instruction
                                FCLASS,
                                // Vectorial Floating-Point Instructions that don't directly map onto the scalar ones
-                               VFMIN, VFMAX, VFSGNJ, VFSGNJN, VFSGNJX, VFEQ, VFNE, VFLT, VFGE, VFLE, VFGT, VFCPKAB_S, VFCPKCD_S, VFCPKAB_D, VFCPKCD_D
+                               VFMIN, VFMAX, VFSGNJ, VFSGNJN, VFSGNJX, VFEQ, VFNE, VFLT, VFGE, VFLE, VFGT, VFCPKAB_S, VFCPKCD_S, VFCPKAB_D, VFCPKCD_D,
+                               // NFU Operations
+                               SET_LOAD_NFU, EXEC_NFU, POP_NFU
                              } fu_op;
 
     typedef struct packed {
