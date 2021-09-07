@@ -12,10 +12,12 @@ module nfu_acc_wrap #(
   parameter nfu_pkg::nfu_features_t    Features =  nfu_pkg::RV64NFU,
 
   localparam int unsigned WIDTH        = Features.Width,
-  localparam int unsigned NOPERANDS    = 2**Features.OpWidth
+  localparam int unsigned NOPERANDS    = 2**Features.OpWidth,
+  localparam int unsigned CONFIG_SELECTS     = Features.ConfigSelects
 )( 
   // Input signals
   input logic [NOPERANDS-1:0][WIDTH-1:0] data_i,
+  input logic [CONFIG_SELECTS-1:0]       select_i,
   // Input handshake
   // Output signals
   output logic [NOPERANDS-1:0][WIDTH-1:0] data_o
@@ -27,16 +29,19 @@ module nfu_acc_wrap #(
     if(CONFIG == 1) begin : acc_0_gen
       fft_inline fft_inline0 (
         .data_i,
+        .select_i,
         .data_o
       );
     end else if(CONFIG == 2) begin : acc_1_gen
       viterbi_inline viterbi_inline0 (
         .data_i,
+        .select_i,
         .data_o
       );
     end else if(CONFIG == 3) begin : acc_2_gen
       popcount_inline popcount_inline0 (
         .data_i,
+        .select_i,
         .data_o
       );
     end

@@ -11,14 +11,17 @@ module nfu_top #(
 
   localparam int unsigned WIDTH              = Features.Width,
   localparam int unsigned ACCS               = Features.Accelerators,
+  localparam int unsigned CONFIGS            = Features.Configs,
+  localparam int unsigned CONFIG_SELECTS     = Features.ConfigSelects,
   localparam int unsigned NOPERANDS          = 2**Features.OpWidth
 ) (
   input logic                       clk_i,
   input logic                       rst_ni,
   // Input signals 
-  input logic [NOPERANDS-1:0]         addr_i, // IRF, ORF register addr
+  input logic [NOPERANDS-1:0]       addr_i, // IRF, ORF register addr
   input logic [WIDTH-1:0]           data_i,
   input logic [ACCS-1:0]            acc_i,
+  input logic [CONFIGS-1:0]         config_i,
   input logic                       irf_store_i,
   input logic                       orf_read_i,
   input logic                       exec_i,
@@ -30,12 +33,7 @@ module nfu_top #(
 
   logic [NOPERANDS-1:0][WIDTH-1:0] data_irf_acc;
   logic [NOPERANDS-1:0][WIDTH-1:0] data_acc_orf;
-
-  // NFU Decoder
-  nfu_decoder #() i_nfu_dec (
-    .clk_i,
-    .rst_ni
-  );
+  logic [CONFIG_SELECTS-1:0] select_config_acc;
 
   // IRF
   nfu_irf #() i_nfu_irf (
@@ -62,7 +60,10 @@ module nfu_top #(
   // Config Regfiles
   nfu_config #() i_nfu_config (
     .clk_i,
-    .rst_ni
+    .rst_ni,
+    .acc_i,
+    .config_i,
+    .select_o ( select_config_acc )
   );
 
   // NFU Accelerators
@@ -71,7 +72,8 @@ module nfu_top #(
     .rst_ni,
     .acc_i,
     .data_i( data_irf_acc ),
-    .data_o( data_acc_orf )
+    .data_o( data_acc_orf ),
+    .select_i( select_config_acc )
   );
 
 endmodule

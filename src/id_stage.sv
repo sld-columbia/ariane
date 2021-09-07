@@ -13,7 +13,9 @@
 // Description: Instruction decode, contains the logic for decode,
 //              issue and read operands.
 
-module id_stage (
+module id_stage # (
+    parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig
+) (
     input  logic                          clk_i,
     input  logic                          rst_ni,
 
@@ -65,7 +67,9 @@ module id_stage (
     // ---------------------------------------------------------
     // 2. Decode and emit instruction to issue stage
     // ---------------------------------------------------------
-    decoder decoder_i (
+    decoder #(
+        .ArianeCfg ( ArianeCfg )
+    ) decoder_i (
         .debug_req_i,
         .irq_ctrl_i,
         .irq_i,

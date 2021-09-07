@@ -20,7 +20,9 @@
 //
 import ariane_pkg::*;
 
-module decoder (
+module decoder # (
+    parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig
+) (
     input  logic               debug_req_i,             // external debug request
     input  logic [riscv::VLEN-1:0] pc_i,                // PC from IF
     input  logic               is_compressed_i,         // is a compressed instruction
@@ -1101,7 +1103,7 @@ module decoder (
                 end
 
                 riscv::OpcodeOpNfu:  begin
-                    if (NFU_PRESENT) begin 
+                    if (ArianeCfg.NFU_PRESENT) begin 
                       instruction_o.fu      = NFU;
                       imm_select           = NFUIMM;
                       case (instr.nfutype.funct3)

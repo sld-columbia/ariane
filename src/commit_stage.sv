@@ -15,7 +15,8 @@
 import ariane_pkg::*;
 
 module commit_stage #(
-    parameter int unsigned NR_COMMIT_PORTS = 2
+    parameter int unsigned NR_COMMIT_PORTS = 2,
+    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 )(
     input  logic                                    clk_i,
     input  logic                                    rst_ni,
@@ -149,7 +150,7 @@ module commit_stage #(
             // --------
             // NFU Flags
             // --------
-            if (NFU_PRESENT && commit_instr_i[0].fu == NFU) begin
+            if (ArianeCfg.NFU_PRESENT && commit_instr_i[0].fu == NFU) begin
               case(commit_instr_i[0].op)
                 POP_NFU: we_gpr_o[0] = 1'b1;
                 default: we_gpr_o[0] = 1'b0;
@@ -249,7 +250,7 @@ module commit_stage #(
 
                     commit_ack_o[1] = 1'b1;
 
-                    if (NFU_PRESENT && commit_instr_i[1].fu == NFU) begin
+                    if (ArianeCfg.NFU_PRESENT && commit_instr_i[1].fu == NFU) begin
                       case(commit_instr_i[1].op)
                         POP_NFU: we_gpr_o[1] = 1'b1;
                         default: we_gpr_o[1] = 1'b0;

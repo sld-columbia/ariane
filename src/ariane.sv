@@ -271,7 +271,9 @@ module ariane #(
   // ---------
   // ID
   // ---------
-  id_stage id_stage_i (
+  id_stage #( 
+    .ArianeCfg ( ArianeCfg )
+  ) id_stage_i (
     .clk_i,
     .rst_ni,
     .flush_i                    ( flush_ctrl_if              ),
@@ -456,7 +458,8 @@ module ariane #(
   assign no_st_pending_commit = no_st_pending_ex & dcache_commit_wbuffer_empty;
 
   commit_stage #(
-    .NR_COMMIT_PORTS ( NR_COMMIT_PORTS )
+    .NR_COMMIT_PORTS ( NR_COMMIT_PORTS ),
+    .ArianeCfg  ( ArianeCfg  )
   ) commit_stage_i (
     .clk_i,
     .rst_ni,
