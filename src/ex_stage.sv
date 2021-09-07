@@ -262,7 +262,7 @@ module ex_stage #(
     // NFU
     // ----------------
     generate
-      if (NFU_PRESENT) begin : nfu_gen
+      if (ArianeCfg.NFU_PRESENT) begin : nfu_gen
           fu_data_t nfu_data;
           assign nfu_data = nfu_valid_i ? fu_data_i : '0;
 

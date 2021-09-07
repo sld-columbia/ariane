@@ -52,6 +52,7 @@ package ariane_pkg;
       bit                               SwapEndianess;         // set to 1 to swap endianess inside L1.5 openpiton adapter
       //
       logic [63:0]                      DmBaseAddress;         // offset of the debug module
+      bit                               NFU_PRESENT;           // Enable NFU implementation
     } ariane_cfg_t;
 
     localparam ariane_cfg_t ArianeDefaultConfig = '{
@@ -74,7 +75,9 @@ package ariane_pkg;
       Axi64BitCompliant:      1'b1,
       SwapEndianess:          1'b0,
       // debug
-      DmBaseAddress:          64'h0
+      DmBaseAddress:          64'h0,
+      // NFU
+      NFU_PRESENT:            1
     };
 
     // Function being called to check parameters
@@ -184,8 +187,6 @@ package ariane_pkg;
     // --------------------------------------
     // vvvv Don't change these by hand! vvvv
     localparam bit FP_PRESENT = RVF | RVD | XF16 | XF16ALT | XF8;
-
-    localparam bit NFU_PRESENT = 0;
 
     // Length of widest floating-point format
     localparam FLEN    = RVD     ? 64 : // D ext.

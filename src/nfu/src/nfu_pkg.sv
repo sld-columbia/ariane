@@ -11,6 +11,8 @@ package nfu_pkg;
     int unsigned Width;
     int unsigned OpWidth;
     int unsigned Accelerators;
+    int unsigned Configs;
+    int unsigned ConfigSelects;
     int unsigned NrShiftRegEntries;
   } nfu_features_t;
 
@@ -19,6 +21,8 @@ package nfu_pkg;
     Width:                  64,
     OpWidth:                5,
     Accelerators:           4,
+    Configs:                4,
+    ConfigSelects:          64,
     NrShiftRegEntries:      4
   };
 

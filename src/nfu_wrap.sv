@@ -28,12 +28,13 @@ module nfu_wrap import ariane_pkg::*; (
   localparam int unsigned OPWIDTH                        = NFU_FEATURES.OpWidth;
   localparam int unsigned NR_SHIFT_REG_WIDTH             = NR_SHIFT_REG_ENTRIES*OPWIDTH-1;
   localparam int unsigned ACCS                           = NFU_FEATURES.Accelerators;
-  localparam int unsigned REG_ENTRIES_BITS               = $clog2(NR_SHIFT_REG_ENTRIES);
+  localparam int unsigned CONFIGS                        = NFU_FEATURES.Configs;
 
   logic irf_store_valid;
   logic orf_read_valid;
   logic exec_valid;
   logic [ACCS-1:0] acc;
+  logic [CONFIGS-1:0] conf;
   logic [OPWIDTH-1:0] addr;
   logic [WIDTH-1:0] data;
 
@@ -50,6 +51,7 @@ module nfu_wrap import ariane_pkg::*; (
     .addr_i( addr ),
     .data_i( data ),
     .acc_i( acc ),
+    .config_i( conf ),
     .irf_store_i( irf_store_valid ),
     .orf_read_i( orf_read_valid ),
     .exec_i( exec_valid ),
@@ -102,6 +104,7 @@ module nfu_wrap import ariane_pkg::*; (
         end
         EXEC_NFU: begin
           exec_valid = 1'b1;
+          conf = fu_data_i.imm[2*OPWIDTH-1:OPWIDTH]; 
         end
         POP_NFU: begin            
           orf_read_valid = 1'b1;
