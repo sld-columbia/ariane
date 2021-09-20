@@ -9,15 +9,16 @@ module nfu_orf #(
   // NFU configuration
   parameter nfu_pkg::nfu_features_t         Features =  nfu_pkg::RV64NFU,
 
-  localparam int unsigned WIDTH      = Features.Width,
-  localparam int unsigned ACCS       = Features.Accelerators,
-  localparam int unsigned NOPERANDS    = 2**Features.OpWidth
+  localparam int unsigned WIDTH        = Features.Width,
+  localparam int unsigned ACCS         = Features.Accelerators,
+  localparam int unsigned OPWIDTH      = Features.OpWidth,
+  localparam int unsigned NOPERANDS    = 2**OPWIDTH
 )( 
   input logic                                            clk_i,
   input logic                                            rst_ni,
   // Input signals
   input logic [NOPERANDS-1:0][WIDTH-1:0]                 data_i,
-  input logic [NOPERANDS-1:0]                            addr_i,
+  input logic [OPWIDTH-1:0]                              addr_i,
   input logic [ACCS-1:0]                                 acc_i,
   // Input handshake
   input logic                                            data_en_i,
