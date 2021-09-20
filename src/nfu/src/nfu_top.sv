@@ -13,12 +13,13 @@ module nfu_top #(
   localparam int unsigned ACCS               = Features.Accelerators,
   localparam int unsigned CONFIGS            = Features.Configs,
   localparam int unsigned CONFIG_SELECTS     = Features.ConfigSelects,
-  localparam int unsigned NOPERANDS          = 2**Features.OpWidth
+  localparam int unsigned OPWIDTH            = Features.OpWidth,
+  localparam int unsigned NOPERANDS          = 2**OPWIDTH
 ) (
   input logic                       clk_i,
   input logic                       rst_ni,
   // Input signals 
-  input logic [NOPERANDS-1:0]       addr_i, // IRF, ORF register addr
+  input logic [OPWIDTH-1:0]       addr_i, // IRF, ORF register addr
   input logic [WIDTH-1:0]           data_i,
   input logic [ACCS-1:0]            acc_i,
   input logic [CONFIGS-1:0]         config_i,
