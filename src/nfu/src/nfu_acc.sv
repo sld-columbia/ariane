@@ -18,8 +18,8 @@ module nfu_acc #(
   input logic                          clk_i,
   input logic                          rst_ni,
   // Input signals
-  input logic [NOPERANDS-1:0][WIDTH-1:0] data_i,
-  input logic [ACCS-1:0]               acc_i,
+  input logic [NOPERANDS-1:0][WIDTH-1:0]  data_i,
+  input logic [ACCS-1:0]                  acc_i,
   input logic [CONFIG_SELECTS-1:0]        select_i,
   // Input handshake
   // Output signals
@@ -36,7 +36,7 @@ module nfu_acc #(
     .select_i,
     .data_o(result[0])
   );
-  
+
   nfu_acc_wrap #(
     .CONFIG(2)
   ) acc_1 (
@@ -51,6 +51,14 @@ module nfu_acc #(
     .data_i,
     .select_i,
     .data_o(result[2])
+  );
+  
+  nfu_acc_wrap #(
+    .CONFIG(4)
+  ) acc_3 (
+    .data_i,
+    .select_i,
+    .data_o(result[3])
   );
   
   

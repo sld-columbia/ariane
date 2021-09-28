@@ -3,16 +3,16 @@
 //
 // Author: David Trilla, IBM Research Thomas J. Watson Center
 // Date: 02.05.2021
-// Description: NOVIA Input Register File (orf)
+// Description: NOVIA Output Register File (ORF)
 
 module nfu_orf #(
   // NFU configuration
   parameter nfu_pkg::nfu_features_t         Features =  nfu_pkg::RV64NFU,
 
-  localparam int unsigned WIDTH        = Features.Width,
-  localparam int unsigned ACCS         = Features.Accelerators,
-  localparam int unsigned OPWIDTH      = Features.OpWidth,
-  localparam int unsigned NOPERANDS    = 2**OPWIDTH
+  localparam int unsigned WIDTH      = Features.Width,
+  localparam int unsigned ACCS       = Features.Accelerators,
+  localparam int unsigned OPWIDTH    = Features.OpWidth,
+  localparam int unsigned NOPERANDS  = 2**OPWIDTH
 )( 
   input logic                                            clk_i,
   input logic                                            rst_ni,

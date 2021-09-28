@@ -8,5 +8,8 @@ nfu:
     src/nfu_config.sv,
     src/nfu_acc.sv,
     src/nfu_acc_wrap.sv,
-    src/accelerators/popcount_inline.sv
+    src/accelerators/popcount_inline.sv,
+    src/accelerators/viterbi_inline.sv,
+    src/accelerators/fft_inline.sv,
+    src/accelerators/fftfmcw_inline.sv
   ]

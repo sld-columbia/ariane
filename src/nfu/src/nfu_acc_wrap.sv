@@ -26,20 +26,26 @@ module nfu_acc_wrap #(
   
 
   generate
-    if(CONFIG == 1) begin : acc_0_gen
-      fft_inline fft_inline0 (
+    if (CONFIG == 1) begin : acc_0_gen
+      fftfmcw_inline fftfmcw_inline0 (
         .data_i,
         .select_i,
         .data_o
       );
     end else if(CONFIG == 2) begin : acc_1_gen
-      viterbi_inline viterbi_inline0 (
+      viterbi_inline viterbi_inline1 (
         .data_i,
         .select_i,
         .data_o
       );
-    end else if(CONFIG == 3) begin : acc_2_gen
-      popcount_inline popcount_inline0 (
+    end else if(CONFIG == 3) begin : acc_0_gen
+      fft_inline fft_inline2 (
+        .data_i,
+        .select_i,
+        .data_o
+      );
+    end else if(CONFIG == 4) begin : acc_2_gen
+      popcount_inline popcount_inline3 (
         .data_i,
         .select_i,
         .data_o
