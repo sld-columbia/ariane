@@ -23,7 +23,7 @@ package nfu_pkg;
     Accelerators:           4,
     Configs:                4,
     ConfigSelects:          64,
-    NrShiftRegEntries:      4
+    NrShiftRegEntries:      3
   };
 
 endpackage

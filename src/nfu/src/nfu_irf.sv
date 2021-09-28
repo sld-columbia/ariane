@@ -3,7 +3,7 @@
 //
 // Author: David Trilla, IBM Research Thomas J. Watson Center
 // Date: 02.05.2021
-// Description: NOVIA Input Register File (ORF)
+// Description: NOVIA Input Register File (IRF)
 
 module nfu_irf #(
   // NFU configuration

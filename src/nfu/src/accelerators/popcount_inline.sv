@@ -10,7 +10,6 @@ module popcount_inline #(
   parameter nfu_pkg::nfu_features_t         Features =  nfu_pkg::RV64NFU,
 
   localparam int unsigned WIDTH      = Features.Width,
-  localparam int unsigned ACCS       = Features.Accelerators,
   localparam int unsigned CONFIG_SELECTS     = Features.ConfigSelects,
   localparam int unsigned NOPERANDS  = 2**Features.OpWidth
 )( 
