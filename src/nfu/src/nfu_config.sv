@@ -26,7 +26,7 @@ module nfu_config #(
   // Output handshake
 );
 
-  reg [ACCS-1:0][CONFIGS-1:0] configs [CONFIG_SELECTS-1:0];
+  reg [CONFIG_SELECTS-1:0] configs [ACCS-1:0][CONFIGS-1:0];
   initial $readmemh("src/nfu/nfu.select.data", configs);
 
   assign select_o = configs[acc_i][config_i]; 
