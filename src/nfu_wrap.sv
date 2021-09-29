@@ -26,94 +26,171 @@ module nfu_wrap import ariane_pkg::*; (
   localparam int unsigned NR_SHIFT_REG_ENTRIES           = NFU_FEATURES.NrShiftRegEntries;
   localparam int unsigned WIDTH                          = NFU_FEATURES.Width;
   localparam int unsigned OPWIDTH                        = NFU_FEATURES.OpWidth;
-  localparam int unsigned NR_SHIFT_REG_WIDTH             = NR_SHIFT_REG_ENTRIES*OPWIDTH-1;
+  localparam int unsigned NR_SHIFT_REG_WIDTH             = NR_SHIFT_REG_ENTRIES*OPWIDTH;
   localparam int unsigned ACCS                           = NFU_FEATURES.Accelerators;
   localparam int unsigned CONFIGS                        = NFU_FEATURES.Configs;
 
   logic irf_store_valid;
   logic orf_read_valid;
-  logic exec_valid;
   logic [ACCS-1:0] acc;
   logic [CONFIGS-1:0] conf;
-  logic [OPWIDTH-1:0] addr;
+  logic [OPWIDTH-1:0] addr_irf, addr_orf;
   logic [WIDTH-1:0] data;
 
-  logic [NR_SHIFT_REG_ENTRIES-1:0][OPWIDTH-1:0] ShiftReg;
-  assign nfu_ready_o = 1'b1;
+  logic [NR_SHIFT_REG_ENTRIES-1:0][OPWIDTH-1:0] ShiftRegAddr;
+  logic [NR_SHIFT_REG_ENTRIES-1:0][WIDTH-1:0] ShiftRegData;
+  logic [NR_SHIFT_REG_ENTRIES-1:0] ShiftRegValid;
+  logic [NR_SHIFT_REG_ENTRIES-1:0] ShiftRegFilled;
+  logic [WIDTH-1:0] PCReg;
 
+  logic comp4, comp8;
+  logic nfu_ready;
 
+  logic [WIDTH-1:0] BufferedPCReg;
+  logic [WIDTH-1:0] BufferedImm;
+
+  assign nfu_ready_o = nfu_ready;
 
   nfu_top #(
 
   ) i_nfu_top (
     .clk_i,
     .rst_ni,
-    .addr_i( addr ),
+    .addr_irf_i( addr_irf ),
+    .addr_orf_i( addr_orf ),
     .data_i( data ),
     .acc_i( acc ),
     .config_i( conf ),
     .irf_store_i( irf_store_valid ),
     .orf_read_i( orf_read_valid ),
-    .exec_i( exec_valid ),
     .data_o( nfu_result_o )
   );
 
-  // Shift Register Window
   always_ff @(posedge clk_i or negedge rst_ni) begin : shift_reg
     if(~rst_ni) begin 
-      ShiftReg <= '0;
+      ShiftRegAddr <= '0;
+      ShiftRegFilled <= ~0;
+      PCReg <= '0;
+      BufferedImm <= '0;
+      BufferedPCReg <= '0;
     end else begin
-      // Shift Register
-      if(nfu_valid_i && fu_data_i.operator == ariane_pkg::SET_LOAD_NFU) begin
-        // Adding a single 0 position to not count the commit of the
-        // SET_LOAD instructions
-        ShiftReg <= {fu_data_i.imm[NR_SHIFT_REG_WIDTH-1:OPWIDTH],5'b0};
-        acc <= fu_data_i.imm[OPWIDTH-1:0];
-      end
-      else begin
-        if(commit_ack_i[0] || commit_ack_i[1]) begin
-          for (int j = 1; j < NR_SHIFT_REG_ENTRIES; j++) begin
-            ShiftReg[j-1][OPWIDTH-1:0] <= ShiftReg[j][OPWIDTH-1:0];
+      if(nfu_valid_i) begin
+        case(fu_data_i.operator)
+          SET_LOAD_NFU: begin
+            if(ShiftRegFilled == 3'b111) begin
+              ShiftRegAddr <= fu_data_i.imm[NR_SHIFT_REG_WIDTH+OPWIDTH-1:OPWIDTH];
+              acc <= fu_data_i.imm[OPWIDTH-1:0];
+              PCReg <= fu_data_i.operand_a;
+              ShiftRegFilled <= {fu_data_i.imm[OPWIDTH*4-1:OPWIDTH*3]==0,
+                             fu_data_i.imm[OPWIDTH*3-1:OPWIDTH*2]==0,
+                             fu_data_i.imm[OPWIDTH*2-1:OPWIDTH]==0};
+            end else begin
+              BufferedImm <= fu_data_i.imm;
+              BufferedPCReg <= fu_data_i.operand_a;
+            end
           end
-          ShiftReg[NR_SHIFT_REG_ENTRIES-1][OPWIDTH-1:0] <= '0;
-        end
+        endcase
+      end
+
+      if(BufferedImm != 0 && ShiftRegFilled == 3'b111) begin
+        ShiftRegAddr <= BufferedImm[NR_SHIFT_REG_WIDTH+OPWIDTH-1:OPWIDTH];
+        acc <= BufferedImm[OPWIDTH-1:0];
+        PCReg <= BufferedPCReg;
+        ShiftRegFilled <= {BufferedImm[OPWIDTH*4-1:OPWIDTH*3]==0,
+                             BufferedImm[OPWIDTH*3-1:OPWIDTH*2]==0,
+                             BufferedImm[OPWIDTH*2-1:OPWIDTH]==0};
+        BufferedImm <= '0;
+        BufferedPCReg <= '0;
+      end
+
+      if(ShiftRegValid[0] && !ShiftRegFilled[0]) begin
+        data <= ShiftRegData[0];
+        addr_irf <= ShiftRegAddr[0];
+        ShiftRegFilled[0] <= 1'b1;
+        irf_store_valid <= 1'b1;
+      end else if (ShiftRegValid[1] && !ShiftRegFilled[1]) begin
+        data <= ShiftRegData[1];
+        addr_irf <= ShiftRegAddr[1];
+        ShiftRegFilled[1] <= 1'b1;
+        irf_store_valid <= 1'b1;
+      end else if (ShiftRegValid[2] && !ShiftRegFilled[2]) begin
+        data <= ShiftRegData[2];
+        addr_irf <= ShiftRegAddr[2];
+        ShiftRegFilled[2] <= 1'b1;
+        irf_store_valid <= 1'b1;
+      end else begin
+        irf_store_valid <= 1'b0;
       end
     end
   end
 
   always_comb begin : decoder
-    irf_store_valid = 1'b0;
     orf_read_valid = 1'b0;
-    exec_valid = 1'b0;
-        
-    addr = ShiftReg[0];
     
-    // Set valid signals
-    if(addr != 0 && (commit_ack_i[0] || commit_ack_i[1])) begin
-      irf_store_valid = 1'b1;
-      if(commit_instr_i[0].valid) begin
-        data = commit_instr_i[0].result;
-      end
-      else if (commit_instr_i[1].valid) begin
-        data = commit_instr_i[1].result;
+    if(~rst_ni) begin 
+      ShiftRegData <= '0;
+      ShiftRegValid <= '0;
+      nfu_ready <= '1;
+    end
+
+    if(commit_ack_i[0] || commit_ack_i[1]) begin
+      for(int unsigned i = 0; i < 2; i++) begin
+        if(commit_instr_i[i].valid) begin 
+          if (commit_instr_i[i].pc == PCReg+4 && ShiftRegAddr[0] != 0) begin
+            ShiftRegData[0] = commit_instr_i[i].result;
+            ShiftRegValid[0] = 1'b1;
+            comp4 = commit_instr_i[i].is_compressed;
+          end
+          if (((commit_instr_i[i].pc == PCReg+6 && comp4) ||
+            (commit_instr_i[i].pc == PCReg+8 && !comp4)) && ShiftRegAddr[1] != 0) begin
+            ShiftRegData[1] = commit_instr_i[i].result;
+            ShiftRegValid[1] = 1'b1;
+            comp8 = commit_instr_i[i].is_compressed;
+          end
+          if (((commit_instr_i[i].pc == PCReg+8 && (comp4&&comp8)) || 
+              (commit_instr_i[i].pc == PCReg+10 && (comp4^comp8)) ||
+            commit_instr_i[i].pc == PCReg+12) && ShiftRegAddr[2] != 0) begin
+            ShiftRegData[2] = commit_instr_i[i].result;
+            ShiftRegValid[2] = 1'b1;
+          end
+        end
       end
     end
+
     if(nfu_valid_i) begin
       case(fu_data_i.operator)
         SET_LOAD_NFU: begin
+          if(ShiftRegFilled != 3'b111) begin
+            nfu_ready = 1'b0;
+          end else begin
+              ShiftRegValid <= {fu_data_i.imm[OPWIDTH*4-1:OPWIDTH*3]==0,
+                            fu_data_i.imm[OPWIDTH*3-1:OPWIDTH*2]==0,
+                            fu_data_i.imm[OPWIDTH*2-1:OPWIDTH]==0};
+          end  
         end
         EXEC_NFU: begin
-          exec_valid = 1'b1;
+          if(ShiftRegFilled != 3'b111) begin
+            nfu_ready = 1'b0;
+          end
           conf = fu_data_i.imm[2*OPWIDTH-1:OPWIDTH]; 
         end
         POP_NFU: begin            
           orf_read_valid = 1'b1;
-          addr = fu_data_i.imm[3*OPWIDTH-1:2*OPWIDTH]; 
+          addr_orf = fu_data_i.imm[3*OPWIDTH-1:2*OPWIDTH]; 
         end
         default: begin
           //TODO: default:  This should raise an exception
         end
       endcase
+    end
+    
+    if(!nfu_ready) begin
+      if(ShiftRegFilled == 3'b111) begin
+        nfu_ready = 1'b1;
+        ShiftRegValid <= {BufferedImm[OPWIDTH*4-1:OPWIDTH*3]==0,
+                          BufferedImm[OPWIDTH*3-1:OPWIDTH*2]==0,
+                          BufferedImm[OPWIDTH*2-1:OPWIDTH]==0};
+      end
     end
   end
 

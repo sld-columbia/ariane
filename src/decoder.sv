@@ -1109,6 +1109,7 @@ module decoder # (
                       case (instr.nfutype.funct3)
                         3'b000: begin 
                           instruction_o.op     = ariane_pkg::SET_LOAD_NFU;
+                          instruction_o.use_pc = 1'b1;
                           end
                         3'b001: begin 
                           instruction_o.op     = ariane_pkg::EXEC_NFU;

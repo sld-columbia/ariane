@@ -19,13 +19,13 @@ module nfu_top #(
   input logic                       clk_i,
   input logic                       rst_ni,
   // Input signals 
-  input logic [OPWIDTH-1:0]       addr_i, // IRF, ORF register addr
+  input logic [OPWIDTH-1:0]         addr_irf_i, // IRF, ORF register addr
+  input logic [OPWIDTH-1:0]         addr_orf_i, // IRF, ORF register addr
   input logic [WIDTH-1:0]           data_i,
   input logic [ACCS-1:0]            acc_i,
   input logic [CONFIGS-1:0]         config_i,
   input logic                       irf_store_i,
   input logic                       orf_read_i,
-  input logic                       exec_i,
   // Input handshake
   // Output signals
   output logic [WIDTH-1:0]          data_o
@@ -41,7 +41,7 @@ module nfu_top #(
     .clk_i,
     .rst_ni,
     .data_i,
-    .addr_i,
+    .addr_i ( addr_irf_i ),
     .acc_i,
     .data_en_i ( irf_store_i ),
     .data_o( data_irf_acc )
@@ -52,7 +52,7 @@ module nfu_top #(
     .clk_i,
     .rst_ni,
     .data_i ( data_acc_orf ),
-    .addr_i,
+    .addr_i ( addr_orf_i ),
     .acc_i,
     .data_en_i ( orf_read_i ),
     .data_o
