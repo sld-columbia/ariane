@@ -89,6 +89,8 @@ module nfu_wrap import ariane_pkg::*; (
               BufferedPCReg <= fu_data_i.operand_a;
             end
           end
+            default: begin
+            end
         endcase
       end
 
@@ -128,9 +130,9 @@ module nfu_wrap import ariane_pkg::*; (
     orf_read_valid = 1'b0;
     
     if(~rst_ni) begin 
-      ShiftRegData <= '0;
-      ShiftRegValid <= '0;
-      nfu_ready <= '1;
+      ShiftRegData = '0;
+      ShiftRegValid = '0;
+      nfu_ready = '1;
     end
 
     if(commit_ack_i[0] || commit_ack_i[1]) begin
@@ -163,7 +165,7 @@ module nfu_wrap import ariane_pkg::*; (
           if(ShiftRegFilled != 3'b111) begin
             nfu_ready = 1'b0;
           end else begin
-              ShiftRegValid <= {fu_data_i.imm[OPWIDTH*4-1:OPWIDTH*3]==0,
+              ShiftRegValid = {fu_data_i.imm[OPWIDTH*4-1:OPWIDTH*3]==0,
                             fu_data_i.imm[OPWIDTH*3-1:OPWIDTH*2]==0,
                             fu_data_i.imm[OPWIDTH*2-1:OPWIDTH]==0};
           end  
@@ -187,7 +189,7 @@ module nfu_wrap import ariane_pkg::*; (
     if(!nfu_ready) begin
       if(ShiftRegFilled == 3'b111) begin
         nfu_ready = 1'b1;
-        ShiftRegValid <= {BufferedImm[OPWIDTH*4-1:OPWIDTH*3]==0,
+        ShiftRegValid = {BufferedImm[OPWIDTH*4-1:OPWIDTH*3]==0,
                           BufferedImm[OPWIDTH*3-1:OPWIDTH*2]==0,
                           BufferedImm[OPWIDTH*2-1:OPWIDTH]==0};
       end
