@@ -14,6 +14,8 @@ module nfu_config #(
   localparam int unsigned CONFIGS            = Features.Configs
 
 )( 
+  input logic                       clk_i,
+  input logic                       rst_ni,
   input logic [ACCS-1:0]            acc_i,
   input logic [CONFIGS-1:0]         config_i,
   // Input signals
