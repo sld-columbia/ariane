@@ -32,6 +32,14 @@ module popcount_inline #(
   assign data_o[0] = f & 64'h0000_0000_0000_007F;
 
 
+  assign data_o[1] = data_i[0];
+  assign data_o[2] = data_i[1];
+  assign data_o[3] = data_i[2];
+  assign data_o[4] = data_i[3];
+  assign data_o[5] = data_i[4];
+  assign data_o[6] = data_i[5];
+
+
 
 
 endmodule
