@@ -51,5 +51,10 @@ module fft_inline #(
   assign data_o[2] = o;
   assign data_o[3] = k;
 
+  assign data_o[4] = data_i[0];
+  assign data_o[5] = data_i[1];
+  assign data_o[6] = data_i[2];
+  assign data_o[7] = data_i[3];
+
 
 endmodule

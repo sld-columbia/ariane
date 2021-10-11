@@ -23,4 +23,8 @@ module viterbi_inline #(
 );
   assign data_o[0] = ((data_i[0] ^ {64{1'b1}}) & data_i[2]) | (data_i[0] & data_i[1]);
 
+  assign data_o[1] = data_i[0];
+  assign data_o[2] = data_i[1];
+  assign data_o[3] = data_i[2];
+
 endmodule
