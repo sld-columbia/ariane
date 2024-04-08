@@ -16,7 +16,7 @@
 /* verilator lint_off WIDTH */
 import ariane_pkg::*;
 
-module ptw #(
+module ariane_ptw #(
         parameter int ASID_WIDTH = 1
     )(
     input  logic                    clk_i,                  // Clock

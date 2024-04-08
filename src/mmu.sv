@@ -129,7 +129,7 @@ module mmu #(
     );
 
 
-    ptw  #(
+    ariane_ptw  #(
         .ASID_WIDTH             ( ASID_WIDTH            )
     ) i_ptw (
         .clk_i                  ( clk_i                 ),

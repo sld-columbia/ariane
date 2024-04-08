@@ -16,7 +16,7 @@
 // change request from the back-end and does branch prediction.
 import ariane_pkg::*;
 
-module frontend #(
+module ariane_frontend #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
   input  logic               clk_i,              // Clock
@@ -359,7 +359,7 @@ module frontend #(
       .data_o ( ras_predict )
     );
 
-    btb #(
+    ariane_btb #(
       .NR_ENTRIES       ( ArianeCfg.BTBEntries   )
     ) i_btb (
       .clk_i,

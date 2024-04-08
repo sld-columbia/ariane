@@ -243,7 +243,7 @@ module ariane #(
   // --------------
   // Frontend
   // --------------
-  frontend #(
+  ariane_frontend #(
     .ArianeCfg ( ArianeCfg )
   ) i_frontend (
     .flush_i             ( flush_ctrl_if                 ), // not entirely correct

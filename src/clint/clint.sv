@@ -16,7 +16,7 @@
 // Platforms provide a real-time counter, exposed as a memory-mapped machine-mode register, mtime. mtime must run at
 // constant frequency, and the platform must provide a mechanism for determining the timebase of mtime (device tree).
 
-module clint #(
+module ariane_clint #(
     parameter int unsigned AXI_ADDR_WIDTH = 64,
     parameter int unsigned AXI_DATA_WIDTH = 64,
     parameter int unsigned AXI_ID_WIDTH   = 10,

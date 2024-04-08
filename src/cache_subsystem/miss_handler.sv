@@ -531,7 +531,7 @@ module miss_handler import ariane_pkg::*; import std_cache_pkg::*; #(
     logic [3:0]                  id_bypass_fsm;
     logic [3:0]                  gnt_id_bypass_fsm;
 
-    arbiter #(
+    axi_arbiter #(
         .NR_PORTS       ( NR_PORTS                                 ),
         .DATA_WIDTH     ( 64                                       )
     ) i_bypass_arbiter (
@@ -662,7 +662,7 @@ endmodule
 //
 // Description: Arbitrates access to AXI refill/bypass
 //
-module arbiter #(
+module axi_arbiter #(
         parameter int unsigned NR_PORTS   = 3,
         parameter int unsigned DATA_WIDTH = 64
 )(

@@ -14,7 +14,7 @@
 // Date: 09.06.2018
 
 // branch target buffer
-module btb #(
+module ariane_btb #(
     parameter int NR_ENTRIES = 8
 )(
     input  logic                        clk_i,           // Clock

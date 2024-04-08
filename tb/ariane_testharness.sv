@@ -598,7 +598,7 @@ module ariane_testharness #(
   ariane_axi::req_t    axi_clint_req;
   ariane_axi::resp_t   axi_clint_resp;
 
-  clint #(
+  ariane_clint #(
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
     .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),

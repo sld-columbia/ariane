@@ -453,7 +453,7 @@ end
 ariane_axi::req_t    axi_clint_req;
 ariane_axi::resp_t   axi_clint_resp;
 
-clint #(
+ariane_clint #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
